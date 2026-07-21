@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ENA-QWQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: transparent;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border: #e5e7eb;
+            --radius: 0px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border-radius: 0 !important;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            background: url(https://api.imlazy.ink/img) center / cover fixed;
+            background-color: #f0f0f0;
+            position: relative;
+            margin: 0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.78);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .layout {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            gap: 50px;
+        }
+        .sidebar {
+            width: 290px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 50px;
+            align-self: flex-start;
+            height: fit-content;
+            background: var(--bg);
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .sidebar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50% !important;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid var(--border);
+        }
+        .sidebar-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        .sidebar-bio {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .info-item svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            color: var(--text-tertiary);
+        }
+        .info-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-right: 2px;
+        }
+        .friends-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #888;
+        }
+        .friends-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .friends-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #000;
+            margin: 0;
+        }
+        .friends-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0px;
+        }
+        .friend-card {
+            position: relative;
+            overflow: visible;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 0 10px 0;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: transparent;
+            transition: color 0.3s ease;
+            z-index: 1;
+            text-align: center;
+        }
+        .friend-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background: #555;
+            transition: background 0.3s ease;
+        }
+        .friend-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 0%;
+            background: #2d2d2d;
+            transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: -1;
+        }
+        .friend-card:hover {
+            color: #fff !important;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+        .friend-card:hover::before {
+            height: 100%;
+        }
+        .friend-card:hover::after {
+            background: #000;
+        }
+        .friend-card img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+            border-radius: 50% !important;
+            background: #f3f4f6;
+        }
+        .friend-card svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: var(--text-tertiary);
+        }
+        .connect-section {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #888;
+        }
+        .connect-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #000;
+            margin-bottom: 16px;
+        }
+        .connect-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0px;
+            row-gap: 0px;
+        }
+        .connect-link {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0 10px 0;
+            border-bottom: 2px solid var(--border);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: transparent;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+            margin-right: 20px;
+            z-index: 1;
+            text-align: center;
+        }
+        .connect-link:nth-child(2n) {
+            margin-right: 0;
+        }
+        .connect-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--bg-color, #6b7280);
+            transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: -1;
+        }
+        .connect-link:hover {
+            color: #fff !important;
+            border-bottom-color: var(--bg-color, #6b7280);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+        .connect-link:hover::before {
+            height: 100%;
+        }
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0px;
+            row-gap: 0px;
+        }
+        .tech-item {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0 10px 0;
+            border-bottom: 2px solid var(--border);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: transparent;
+            text-align: center;
+            transition: color 0.3s ease;
+            margin-right: 24px;
+            z-index: 1;
+        }
+        .tech-item::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--bg-color, #6b7280);
+            transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: -1;
+        }
+        .tech-item:hover {
+            color: #fff !important;
+            border-bottom-color: var(--bg-color, #6b7280);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+        .tech-item:hover::before {
+            height: 100%;
+        }
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .section {
+            margin-bottom: 56px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #888;
+        }
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #000;
+            margin: 0;
+        }
+        .section-link {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+        .section-link:hover {
+            color: #000;
+        }
+        .section-link svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.3s ease;
+            transform: rotate(0deg);
+        }
+        .section-link:hover svg {
+            transform: rotate(-45deg);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+        .charts-area {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+        .chart-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        .code-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 8px;
+        }
+        .code-stat-card {
+            background: var(--bg);
+            padding: 20px 24px;
+            border-bottom: none;
+        }
+        .code-stat-card .stat-value {
+            font-size: 2rem;
+            margin-bottom: 4px;
+        }
+        .code-stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+        .error-text {
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+        .repo-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .repo-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #888;
+        }
+        .repo-item:last-child {
+            border-bottom: none;
+        }
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+        .repo-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 2px;
+        }
+        .repo-name::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: #000;
+            transition: width 0.3s ease;
+        }
+        .repo-name:hover::after {
+            width: 100%;
+        }
+        .repo-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        .repo-stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .repo-stats span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .repo-stats svg {
+            width: 14px;
+            height: 14px;
+        }
+        .lang-dot {
+            width: 8px;
+            height: 8px;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #888;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .footer-center {
+            text-align: center;
+            flex: 1;
+        }
+        .footer a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            position: relative;
+            padding-bottom: 2px;
+        }
+        .footer a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: #000;
+            transition: width 0.3s ease;
+        }
+        .footer a:hover::after {
+            width: 100%;
+        }
+        .footer a:hover {
+            color: var(--text-primary);
+        }
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+                padding: 30px 20px;
+                gap: 30px;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+            .stats-grid,
+            .code-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .connect-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .tech-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            .connect-link {
+                margin-right: 16px;
+            }
+            .tech-item {
+                margin-right: 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid,
+            .code-stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .tech-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .connect-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-header {
+                flex-wrap: wrap;
+            }
+            .repo-stats {
+                gap: 10px;
+                font-size: 0.7rem;
+            }
+            .connect-link,
+            .tech-item {
+                margin-right: 0;
+            }
+            .section-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .footer {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            .footer-center {
+                flex: 0 0 100%;
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img class="sidebar-avatar" id="avatar" src="" alt="avatar" />
+                <div class="sidebar-name">ENA-QWQ</div>
+            </div>
+            <div class="sidebar-bio" id="sidebarBio">加载个人介绍...</div>
+            <ul class="info-list">
+                <li class="info-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span><strong>年龄</strong> ?</span>
+                </li>
+                <li class="info-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span><strong>位置</strong> 中国西安</span>
+                </li>
+                <li class="info-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <span><strong>兴趣</strong> 写代码，画MC皮肤，二刺螈，etc.</span>
+                </li>
+                <li class="info-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span><strong>游戏</strong> Minecraft</span>
+                </li>
+            </ul>
+            <div class="friends-section">
+                <div class="friends-header">
+                    <div class="friends-title">Friends</div>
+                    <a href="mailto:409894128@qq.com" class="section-link" target="_blank">
+                        友链申请
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="7" y1="17" x2="17" y2="7" />
+                            <polyline points="7 7 17 7 17 17" />
+                        </svg>
+                    </a>
+                </div>
+                <div class="friends-grid" id="friendsGrid"></div>
+            </div>
+            <div class="connect-section">
+                <div class="connect-title">Connect</div>
+                <div class="connect-grid" id="connectGrid"></div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <section class="section">
+                <div class="section-header">
+                    <span class="section-title">GitHub Statistics</span>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div>
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">加载中...</div>
+                    </div>
+                </div>
+                <div class="charts-area">
+                    <div>
+                        <div class="chart-title">Language Distribution</div>
+                        <div class="chart-container">
+                            <canvas id="languageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px;">
+                    <div class="chart-title">Code Statistics</div>
+                    <div id="codeStatsContainer">
+                        <div class="error-text">正在加载代码统计...</div>
+                    </div>
+                </div>
+            </section>
+            <section class="section">
+                <div class="section-header">
+                    <span class="section-title">Top Projects</span>
+                    <a href="https://github.com/ENA-QWQ?tab=repositories" class="section-link" target="_blank">
+                        全部仓库
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="7" y1="17" x2="17" y2="7" />
+                            <polyline points="7 7 17 7 17 17" />
+                        </svg>
+                    </a>
+                </div>
+                <div class="repo-list" id="repoList">
+                    <div class="error-text">正在加载仓库...</div>
+                </div>
+            </section>
+            <section class="section">
+                <div class="section-header">
+                    <span class="section-title">Tech Stack</span>
+                </div>
+                <div class="tech-grid" id="techGrid"></div>
+            </section>
+            <footer class="footer">
+                <span>Designed by ENA</span>
+                <span class="footer-center" id="update-time">数据最后更新于 -- 分钟前</span>
+                <a href="https://github.com/ENA-QWQ/ENA-Home" target="_blank">Source on GitHub</a>
+            </footer>
+        </main>
+    </div>
+    <script>
+        const USERNAME = 'ENA-QWQ';
+        const GITHUB_API = 'https://api.github.com';
+        const EXCLUDED_REPOS = ['the-greatest'];
+        const PINNED_REPOS = ['Aura-Framework', 'MCAA'];
+        let languageChart = null;
+        const CACHE_KEY = 'github_data_cache';
+        const CACHE_TTL = 20 * 60 * 1000;
+
+        const FRIENDS = [
+            { name: '雫 API', url: 'https://api.imlazy.ink', icon: 'https://cdn.imlazy.ink:233/img/favicon/nya_api.png' }
+        ];
+        const CONNECT_LINKS = [
+            { name: 'GitHub', url: 'https://github.com/ENA-QWQ', color: '#24292e' },
+            { name: 'Email', url: 'mailto:409894128@qq.com', color: '#d14836' },
+            { name: 'Pixiv', url: 'https://www.pixiv.net/users/120322292', color: '#0096fa' },
+            { name: 'Bilibili', url: 'https://space.bilibili.com/518222861', color: '#fb7299' },
+            { name: 'LittleSkin', url: 'https://littleskin.cn/skinlib?filter=skin&uploader=1157963&sort=time&page=1', color: '#1ea89e' },
+            { name: 'QZone', url: 'https://user.qzone.qq.com/409894128/infocenter', color: '#fece00' }
+        ];
+        const TECH_STACK = [
+            { name: 'HTML', color: '#e34c26' },
+            { name: 'CSS', color: '#264de4' },
+            { name: 'JavaScript', color: '#f7df1e' },
+            { name: 'TypeScript', color: '#3178c6' },
+            { name: 'Java', color: '#b07219' },
+            { name: 'GLSL', color: '#5586a4' },
+            { name: 'Git', color: '#f05032' },
+            { name: 'Python', color: '#3776ab' }
+        ];
+
+        function renderTechStack() {
+            const grid = document.getElementById('techGrid');
+            grid.innerHTML = TECH_STACK.map(item =>
+                `<div class="tech-item" style="--bg-color: ${item.color}; color: ${item.color}; border-bottom-color: ${item.color};">${item.name}</div>`
+            ).join('');
+        }
+
+        function renderFriends() {
+            const grid = document.getElementById('friendsGrid');
+            grid.innerHTML = FRIENDS.map(friend => {
+                const iconHtml = friend.icon ?
+                    `<img src="${friend.icon}" alt="" loading="lazy" />` :
+                    `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z"/></svg>`;
+                return `<a href="${friend.url}" target="_blank" class="friend-card">${iconHtml}${friend.name}</a>`;
+            }).join('');
+        }
+
+        function renderConnect() {
+            const grid = document.getElementById('connectGrid');
+            grid.innerHTML = CONNECT_LINKS.map(link =>
+                `<a href="${link.url}" target="_blank" class="connect-link" style="--bg-color: ${link.color}; color: ${link.color}; border-bottom-color: ${link.color};">${link.name}</a>`
+            ).join('');
+        }
+
+        let repoLinesMap = {};
+
+        function updateStats(user, repos) {
+            const totalStars = repos.reduce((sum, repo) => sum + (repo.stargazers_count || 0), 0);
+            const totalForks = repos.reduce((sum, repo) => sum + (repo.forks_count || 0), 0);
+            const stats = [
+                { value: user.public_repos, label: '仓库数' },
+                { value: totalStars, label: '总星标数' },
+                { value: totalForks, label: '总复刻数' },
+                { value: user.followers, label: '关注者' }
+            ];
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = stats.map(stat =>
+                `<div>
+                    <div class="stat-value">${stat.value.toLocaleString()}</div>
+                    <div class="stat-label">${stat.label}</div>
+                </div>`
+            ).join('');
+        }
+
+        function renderLanguageChart(langBytes) {
+            const sorted = Object.entries(langBytes)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+            if (sorted.length === 0) {
+                document.getElementById('languageChart').parentElement.innerHTML =
+                    '<div class="error-text">暂无语言数据。</div>';
+                return;
+            }
+            const labels = sorted.map(([lang]) => lang);
+            const data = sorted.map(([, bytes]) => bytes);
+            const totalBytes = data.reduce((a, b) => a + b, 0);
+            const percentages = data.map(bytes => ((bytes / totalBytes) * 100).toFixed(1));
+            const colors = [
+                '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b',
+                '#10b981', '#3b82f6', '#ef4444', '#14b8a6'
+            ];
+            if (languageChart) languageChart.destroy();
+            const ctx = document.getElementById('languageChart').getContext('2d');
+            languageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bytes',
+                        data: data,
+                        backgroundColor: colors.slice(0, data.length),
+                        borderColor: 'transparent',
+                        borderRadius: 0,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const idx = context.dataIndex;
+                                    const bytes = context.raw;
+                                    const percent = percentages[idx];
+                                    return `${bytes.toLocaleString()} 字节 (${percent}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1e6) return (value / 1e6).toFixed(1) + ' MB';
+                                    if (value >= 1e3) return (value / 1e3).toFixed(1) + ' KB';
+                                    return value + ' B';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 12, weight: '500' }
+                            }
+                        }
+                    },
+                    afterDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        const meta = chart.getDatasetMeta(0);
+                        const data = chart.data.datasets[0].data;
+                        const total = data.reduce((a, b) => a + b, 0);
+                        chart.data.datasets[0].data.forEach((value, index) => {
+                            const percent = ((value / total) * 100).toFixed(1) + '%';
+                            const bar = meta.data[index];
+                            const x = bar.x + 4;
+                            const y = bar.y;
+                            ctx.fillStyle = '#6b7280';
+                            ctx.font = '12px Inter, sans-serif';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(percent, x, y);
+                        });
+                    }
+                }
+            });
+        }
+
+        function renderCodeStats(summary) {
+            const { totalLines, totalFiles, languageCount } = summary;
+            const html = `
+                <div class="code-stats-grid">
+                    <div class="code-stat-card">
+                        <div class="stat-value">${totalLines.toLocaleString()}</div>
+                        <div class="stat-label">总代码行数</div>
+                    </div>
+                    <div class="code-stat-card">
+                        <div class="stat-value">${totalFiles.toLocaleString()}</div>
+                        <div class="stat-label">总文件数</div>
+                    </div>
+                    <div class="code-stat-card">
+                        <div class="stat-value">${languageCount}</div>
+                        <div class="stat-label">文件类型</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('codeStatsContainer').innerHTML = html;
+        }
+
+        function updateTopRepos(repos, repoLines) {
+            const candidateRepos = repos.filter(r => !r.fork && !EXCLUDED_REPOS.includes(r.name));
+            const pinned = [];
+            const others = [];
+            candidateRepos.forEach(r => {
+                if (PINNED_REPOS.includes(r.name)) {
+                    pinned.push(r);
+                } else {
+                    others.push(r);
+                }
+            });
+            others.sort((a, b) => b.stargazers_count - a.stargazers_count);
+            const topOthers = others.slice(0, 4);
+            const topRepos = [...pinned, ...topOthers];
+            const langColors = {
+                'JavaScript': '#f1e05a',
+                'TypeScript': '#3178c6',
+                'Python': '#3572A5',
+                'HTML': '#e34c26',
+                'CSS': '#563d7c',
+                'Java': '#b07219',
+                'Go': '#00ADD8',
+                'Rust': '#dea584'
+            };
+            const container = document.getElementById('repoList');
+            if (topRepos.length === 0) {
+                container.innerHTML = '<div class="error-text">未找到公开仓库。</div>';
+                return;
+            }
+            container.innerHTML = topRepos.map(repo => {
+                const langColor = langColors[repo.language] || '#9ca3af';
+                const lines = repoLines[repo.name] || 'N/A';
+                const starIcon =
+                    `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>`;
+                const forkIcon =
+                    `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0zM5 2.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5zM8 12.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0z"/></svg>`;
+                const linesIcon =
+                    `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75zm0 4.5a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.25zm0 4.5a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1-.75-.75z"/></svg>`;
+                const date = new Date(repo.updated_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short',
+                    day: 'numeric' });
+                return `
+                    <div class="repo-item">
+                        <div class="repo-header">
+                            <a href="${repo.html_url}" target="_blank" class="repo-name">${repo.name}</a>
+                            <span style="font-size:0.75rem;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;">${repo.language ? `<span class="lang-dot" style="background:${langColor}"></span>${repo.language}` : ''}</span>
+                        </div>
+                        <div class="repo-desc">${repo.description || '暂无描述。'}</div>
+                        <div class="repo-stats">
+                            <span>${starIcon} ${repo.stargazers_count}</span>
+                            <span>${forkIcon} ${repo.forks_count}</span>
+                            <span>${linesIcon} ${typeof lines === 'number' ? lines.toLocaleString() : lines}</span>
+                            <span>更新于 ${date}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateUpdateTime(timestamp) {
+            const el = document.getElementById('update-time');
+            if (!timestamp) {
+                el.textContent = '数据最后更新于 -- 分钟前';
+                return;
+            }
+            const diff = Math.floor((Date.now() - timestamp) / 60000);
+            el.textContent = `数据最后更新于 ${diff} 分钟前`;
+        }
+
+        async function fetchGitHubData() {
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    const now = Date.now();
+                    if (now - parsed.timestamp < CACHE_TTL) {
+                        const { user, repos, langBytes, repoLinesMap: cachedRepoLines, codeStats } = parsed.data;
+                        document.getElementById('avatar').src = user.avatar_url;
+                        document.getElementById('sidebarBio').textContent = user.bio || '暂无个人介绍。';
+                        updateStats(user, repos);
+                        renderLanguageChart(langBytes);
+                        renderCodeStats(codeStats);
+                        repoLinesMap = cachedRepoLines || {};
+                        updateTopRepos(repos, repoLinesMap);
+                        updateUpdateTime(parsed.timestamp);
+                        return;
+                    }
+                } catch(e) {}
+            }
+            try {
+                const [userRes, reposRes] = await Promise.all([
+                    fetch(`${GITHUB_API}/users/${USERNAME}`),
+                    fetch(`${GITHUB_API}/users/${USERNAME}/repos?per_page=100&sort=updated`)
+                ]);
+                if (!userRes.ok || !reposRes.ok) {
+                    throw new Error('获取 GitHub 数据失败');
+                }
+                const user = await userRes.json();
+                const repos = await reposRes.json();
+                document.getElementById('avatar').src = user.avatar_url;
+                document.getElementById('sidebarBio').textContent = user.bio || '暂无个人介绍。';
+                const filteredRepos = repos.filter(repo =>
+                    !repo.fork && !EXCLUDED_REPOS.includes(repo.name)
+                );
+                updateStats(user, repos);
+                const langBytes = await fetchLanguages(filteredRepos);
+                renderLanguageChart(langBytes);
+                const { summary, repoLinesMap: newRepoLines } = await fetchCodeStats(filteredRepos);
+                renderCodeStats(summary);
+                repoLinesMap = newRepoLines;
+                updateTopRepos(repos, repoLinesMap);
+                const cacheData = { user, repos, langBytes, repoLinesMap, codeStats: summary };
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: cacheData }));
+                updateUpdateTime(Date.now());
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function fetchLanguages(repos) {
+            const langRequests = repos.map(repo =>
+                fetch(`${GITHUB_API}/repos/${USERNAME}/${repo.name}/languages`)
+                .then(res => res.ok ? res.json() : Promise.reject())
+                .catch(() => ({}))
+            );
+            const results = await Promise.allSettled(langRequests);
+            const langBytes = {};
+            results.forEach(result => {
+                if (result.status === 'fulfilled') {
+                    const langData = result.value;
+                    for (const [lang, bytes] of Object.entries(langData)) {
+                        if (lang === 'Batchfile') continue;
+                        langBytes[lang] = (langBytes[lang] || 0) + bytes;
+                    }
+                }
+            });
+            return langBytes;
+        }
+
+        async function fetchCodeStats(repos) {
+            const container = document.getElementById('codeStatsContainer');
+            container.innerHTML = '<div class="error-text">正在从所有仓库获取代码统计...</div>';
+            const targetRepos = repos.filter(r => !EXCLUDED_REPOS.includes(r.name));
+            if (targetRepos.length === 0) {
+                container.innerHTML = '<div class="error-text">没有可分析的仓库。</div>';
+                return { summary: { totalLines: 0, totalFiles: 0, languageCount: 0 }, repoLinesMap: {} };
+            }
+            const REQUEST_DELAY_MS = 600;
+            const MAX_RETRIES = 3;
+            const BASE_RETRY_DELAY_MS = 1000;
+            async function fetchWithRetry(repoName, attempt = 1) {
+                const url = `https://ghloc.ifels.dev/${USERNAME}/${repoName}/main`;
+                try {
+                    const response = await fetch(url);
+                    if (response.status === 429) {
+                        if (attempt >= MAX_RETRIES) {
+                            throw new Error(`Rate limit exceeded for ${repoName} after ${MAX_RETRIES} attempts.`);
+                        }
+                        const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return fetchWithRetry(repoName, attempt + 1);
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status} for ${repoName}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (attempt < MAX_RETRIES) {
+                        const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return fetchWithRetry(repoName, attempt + 1);
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+            const results = [];
+            for (let i = 0; i < targetRepos.length; i++) {
+                const repo = targetRepos[i];
+                try {
+                    const data = await fetchWithRetry(repo.name);
+                    results.push({ repoName: repo.name, data });
+                } catch (error) {
+                    results.push({ repoName: repo.name, data: null });
+                }
+                if (i < targetRepos.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY_MS));
+                }
+            }
+            const newRepoLines = {};
+            results.forEach(({ repoName, data }) => {
+                if (data && data.loc !== undefined) {
+                    newRepoLines[repoName] = data.loc;
+                } else {
+                    newRepoLines[repoName] = null;
+                }
+            });
+            const validData = results.filter(r => r.data !== null).map(r => r.data);
+            if (validData.length === 0) {
+                container.innerHTML = '<div class="error-text">无法获取任何仓库的代码统计。</div>';
+                return { summary: { totalLines: 0, totalFiles: 0, languageCount: 0 }, repoLinesMap: newRepoLines };
+            }
+            let totalLines = 0;
+            let totalFiles = 0;
+            const extensionSet = new Set();
+            validData.forEach(data => {
+                totalLines += data.loc || 0;
+                if (data.children) {
+                    totalFiles += countFiles(data.children);
+                }
+                if (data.locByLangs) {
+                    Object.keys(data.locByLangs).forEach(ext => extensionSet.add(ext));
+                }
+            });
+            function countFiles(node) {
+                if (typeof node === 'number') return 1;
+                if (node && typeof node === 'object') {
+                    let total = 0;
+                    if (node.children) {
+                        for (const key in node.children) {
+                            total += countFiles(node.children[key]);
+                        }
+                    } else {
+                        for (const key in node) {
+                            total += countFiles(node[key]);
+                        }
+                    }
+                    return total;
+                }
+                return 0;
+            }
+            const summary = { totalLines, totalFiles, languageCount: extensionSet.size };
+            return { summary, repoLinesMap: newRepoLines };
+        }
+
+        function showError(message) {
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = `<div class="error-text">无法加载数据：${message}</div>`;
+            document.getElementById('repoList').innerHTML = `<div class="error-text">加载仓库失败。</div>`;
+            document.getElementById('codeStatsContainer').innerHTML = `<div class="error-text">加载代码统计失败。</div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTechStack();
+            renderFriends();
+            renderConnect();
+            fetchGitHubData();
+        });
+    </script>
+</body>
+</html>
